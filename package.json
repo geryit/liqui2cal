@@ -1,0 +1,17 @@
+{
+  "name": "Liqui2Cal",
+  "description": "Add Liquipedia matches to your Google Calendar",
+  "private": false,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "zip": "npm run build && cd dist && zip -r ~/Downloads/liqui2cal.zip *"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.39",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
+  }
+}
