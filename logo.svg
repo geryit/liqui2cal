@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Dark rounded square background -->
+  <rect width="128" height="128" rx="26" ry="26" fill="#1e2030"/>
+
+  <!-- Calendar body -->
+  <rect x="22" y="34" width="76" height="70" rx="8" ry="8" fill="#2e3148"/>
+
+  <!-- Calendar top bar -->
+  <rect x="22" y="34" width="76" height="20" rx="8" ry="8" fill="#34d399"/>
+  <rect x="22" y="46" width="76" height="8" fill="#34d399"/>
+
+  <!-- Calendar rings -->
+  <rect x="42" y="26" width="6" height="18" rx="3" ry="3" fill="#d1d5db"/>
+  <rect x="72" y="26" width="6" height="18" rx="3" ry="3" fill="#d1d5db"/>
+
+  <!-- Grid dots -->
+  <circle cx="40" cy="68" r="4" fill="#9ca3af"/>
+  <circle cx="56" cy="68" r="4" fill="#9ca3af"/>
+  <circle cx="72" cy="68" r="4" fill="#9ca3af"/>
+  <circle cx="88" cy="68" r="4" fill="#9ca3af"/>
+  <circle cx="40" cy="86" r="4" fill="#9ca3af"/>
+  <circle cx="56" cy="86" r="4" fill="#9ca3af"/>
+  <circle cx="88" cy="86" r="4" fill="#9ca3af"/>
+
+  <!-- Highlighted day -->
+  <circle cx="72" cy="86" r="9" fill="#34d399"/>
+  <polyline points="67,86 71,90 78,82" fill="none" stroke="#1e2030" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Green up-arrow badge -->
+  <circle cx="102" cy="20" r="17" fill="#34d399"/>
+  <polyline points="95,21 102,13 109,21" fill="none" stroke="#1e2030" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="102" y1="13" x2="102" y2="28" stroke="#1e2030" stroke-width="3.5" stroke-linecap="round"/>
+</svg>
