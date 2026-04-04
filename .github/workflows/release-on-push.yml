@@ -30,7 +30,8 @@ jobs:
       - name: Update manifest version
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new_tag }}
-        run: sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" public/manifest.json
+        run: |
+          sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" public/manifest.json
 
       - name: Build
         run: npm i && npm run build
