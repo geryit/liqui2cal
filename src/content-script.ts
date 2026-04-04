@@ -10,13 +10,16 @@ function extractMatch(item: Element): {
   players: string[];
   timestamp: number;
   stage: string;
+  tournament: string;
 } | null {
   const timer = item.querySelector<HTMLElement>(".timer-object");
   const timestamp = Number(timer?.dataset.timestamp);
   if (!timestamp) return null;
 
+  // Tournament page: .match-info-opponent-row .name
+  // Main page: .match-info-header-opponent .name
   const names = Array.from(
-    item.querySelectorAll(".match-info-opponent-row .name")
+    item.querySelectorAll(".match-info-opponent-row .name, .match-info-header-opponent .name")
   )
     .map((el) => el.textContent?.trim())
     .filter((n): n is string => !!n);
@@ -24,7 +27,11 @@ function extractMatch(item: Element): {
   const stage =
     item.querySelector(".match-info-stage")?.textContent?.trim() ?? "";
 
-  return { players: names, timestamp, stage };
+  // Main page has tournament name per match
+  const tournament =
+    item.querySelector(".match-info-tournament-name")?.textContent?.trim() ?? "";
+
+  return { players: names, timestamp, stage, tournament };
 }
 
 function createCalendarIcon(): SVGSVGElement {
@@ -107,15 +114,22 @@ function createButton(url: string): HTMLAnchorElement {
 }
 
 function injectButtons(): void {
-  const tournament = getTournament();
+  const pageTournament = getTournament();
   const pageUrl = window.location.href;
-  const items = document.querySelectorAll(".carousel-item");
+
+  // Tournament pages: .carousel-item
+  // Main/hub pages: .new-match-style .match-info
+  const items = document.querySelectorAll(
+    ".carousel-item, .new-match-style > .match-info"
+  );
 
   items.forEach((item) => {
     if (item.querySelector(".liqui2cal-btn")) return;
 
     const match = extractMatch(item);
     if (!match) return;
+
+    const tournament = match.tournament || pageTournament;
 
     const url = buildCalendarUrl({
       ...match,
@@ -124,9 +138,16 @@ function injectButtons(): void {
     });
 
     const btn = createButton(url);
-    const matchInfo = item.querySelector(".match-info");
-    if (matchInfo) {
-      matchInfo.appendChild(btn);
+
+    // For carousel items, append to .match-info child
+    // For .match-info items (main page), append directly
+    if (item.classList.contains("match-info")) {
+      item.appendChild(btn);
+    } else {
+      const matchInfo = item.querySelector(".match-info");
+      if (matchInfo) {
+        matchInfo.appendChild(btn);
+      }
     }
   });
 }
