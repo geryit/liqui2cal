@@ -20,19 +20,24 @@ jobs:
         with:
           node-version: "latest"
 
+      - name: Bump version and push tag
+        id: bump
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+
+      - name: Update manifest version
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_tag }}
+        run: sed -i "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" public/manifest.json
+
       - name: Build
         run: npm i && npm run build
 
       - name: Create ZIP file
         run: |
           cd dist && zip -r ../liqui2cal.zip *
-
-      - name: Bump version and push tag
-        id: bump
-        uses: anothrNick/github-tag-action@v1 # Don't use @master or @v1 unless you're happy to test the latest version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
-          WITH_V: false
 
       - name: Release
         uses: softprops/action-gh-release@v2
