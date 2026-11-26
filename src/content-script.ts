@@ -2,36 +2,77 @@ import { buildCalendarUrl } from "./google-calendar";
 
 function getTournament(): string {
   return (
-    document.querySelector(".mw-page-title-main")?.textContent?.trim() ?? ""
+    document
+      .querySelector(".mw-page-title-main, #firstHeading")
+      ?.textContent?.trim() ?? ""
   );
 }
 
-function extractMatch(item: Element): {
+interface ScrapedMatch {
   players: string[];
   timestamp: number;
   stage: string;
   tournament: string;
-} | null {
+}
+
+function text(el: Element | null | undefined): string {
+  return el?.textContent?.trim() ?? "";
+}
+
+function getTimestamp(item: Element): number {
   const timer = item.querySelector<HTMLElement>(".timer-object");
   const timestamp = Number(timer?.dataset.timestamp);
+  return Number.isFinite(timestamp) && timestamp > 0 ? timestamp : 0;
+}
+
+// Team names render three variants inside .name, so take a single one
+function opponentName(opponent: Element): string {
+  const names = Array.from(opponent.querySelectorAll(".name"))
+    .map((name) => text(name.querySelector(".team-name")) || text(name))
+    .filter(Boolean);
+  return names.join(" / ") || text(opponent.firstElementChild);
+}
+
+function extractTickerCard(card: Element): ScrapedMatch | null {
+  const timestamp = getTimestamp(card);
   if (!timestamp) return null;
 
-  // Tournament page: .match-info-opponent-row .name
-  // Main page: .match-info-header-opponent .name
-  const names = Array.from(
-    item.querySelectorAll(".match-info-opponent-row .name, .match-info-header-opponent .name")
+  const players = Array.from(
+    card.querySelectorAll(".match-ticker-card__opponent")
   )
-    .map((el) => el.textContent?.trim())
-    .filter((n): n is string => !!n);
+    .map(opponentName)
+    .filter(Boolean);
 
-  const stage =
-    item.querySelector(".match-info-stage")?.textContent?.trim() ?? "";
+  const stage = text(
+    card.querySelector(".match-ticker-card__header > div:last-child")
+  );
 
-  // Main page has tournament name per match
-  const tournament =
-    item.querySelector(".match-info-tournament-name")?.textContent?.trim() ?? "";
+  // Main page cards carry the tournament name per match
+  const tournament = text(
+    card.querySelector(".match-ticker-card-tournament-wrapper")
+  );
 
-  return { players: names, timestamp, stage, tournament };
+  return { players, timestamp, stage, tournament };
+}
+
+function extractLegacyMatch(item: Element): ScrapedMatch | null {
+  const timestamp = getTimestamp(item);
+  if (!timestamp) return null;
+
+  const players = Array.from(
+    item.querySelectorAll(
+      ".match-info-opponent-row .name, .match-info-header-opponent .name"
+    )
+  )
+    .map(text)
+    .filter(Boolean);
+
+  return {
+    players,
+    timestamp,
+    stage: text(item.querySelector(".match-info-stage")),
+    tournament: text(item.querySelector(".match-info-tournament-name")),
+  };
 }
 
 function createCalendarIcon(): SVGSVGElement {
@@ -117,39 +158,37 @@ function injectButtons(): void {
   const pageTournament = getTournament();
   const pageUrl = window.location.href;
 
-  // Tournament pages: .carousel-item
-  // Main/hub pages: .new-match-style .match-info
-  const items = document.querySelectorAll(
-    ".carousel-item, .new-match-style > .match-info"
-  );
-
-  items.forEach((item) => {
-    if (item.querySelector(".liqui2cal-btn")) return;
-
-    const match = extractMatch(item);
-    if (!match) return;
-
-    const tournament = match.tournament || pageTournament;
+  const inject = (
+    container: Element | null,
+    match: ScrapedMatch | null
+  ): void => {
+    if (!container || !match || container.querySelector(".liqui2cal-btn")) {
+      return;
+    }
 
     const url = buildCalendarUrl({
       ...match,
-      tournament,
+      tournament: match.tournament || pageTournament,
       pageUrl,
     });
 
-    const btn = createButton(url);
+    container.appendChild(createButton(url));
+  };
 
-    // For carousel items, append to .match-info child
-    // For .match-info items (main page), append directly
-    if (item.classList.contains("match-info")) {
-      item.appendChild(btn);
-    } else {
-      const matchInfo = item.querySelector(".match-info");
-      if (matchInfo) {
-        matchInfo.appendChild(btn);
-      }
-    }
+  // Current markup, tournament and main pages: .match-ticker-card
+  document.querySelectorAll(".match-ticker-card").forEach((card) => {
+    inject(card, extractTickerCard(card));
   });
+
+  // Older markup: .carousel-item > .match-info and .new-match-style > .match-info
+  document
+    .querySelectorAll(".carousel-item, .new-match-style > .match-info")
+    .forEach((item) => {
+      const container = item.classList.contains("match-info")
+        ? item
+        : item.querySelector(".match-info");
+      inject(container, extractLegacyMatch(item));
+    });
 }
 
 injectButtons();

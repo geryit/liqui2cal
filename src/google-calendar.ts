@@ -25,7 +25,8 @@ export function buildCalendarUrl(match: MatchData): string {
   const end = new Date(start.getTime() + 60 * 60 * 1000);
 
   const title = match.players.join(" vs ");
-  const description = `${match.tournament} - ${match.stage}\n${match.pageUrl}`;
+  const heading = [match.tournament, match.stage].filter(Boolean).join(" - ");
+  const description = [heading, match.pageUrl].filter(Boolean).join("\n");
 
   const params = new URLSearchParams({
     action: "TEMPLATE",

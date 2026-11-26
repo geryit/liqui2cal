@@ -17,7 +17,7 @@ Liqui2Cal is a Chrome Extension (Manifest V3) that injects "Add to Calendar" but
 
 Two source files, one entry point:
 
-- `src/content-script.ts` — Entry point injected on `liquipedia.net/*`. Scrapes match data from `.carousel-item` elements (opponent names, unix timestamps, stage info), creates styled anchor buttons, and appends them to `.match-info` containers.
+- `src/content-script.ts` — Entry point injected on `liquipedia.net/*`. Scrapes match data from `.match-ticker-card` elements (opponent names, unix timestamps, stage info, tournament name), creates styled anchor buttons, and appends them to the card. The older `.carousel-item` / `.match-info` markup is still handled as a fallback.
 - `src/google-calendar.ts` — Pure function `buildCalendarUrl(MatchData)` that converts match data into a Google Calendar "create event" URL. Assumes 1-hour event duration.
 - `public/manifest.json` — Manifest V3 config. Content script runs on `liquipedia.net` only.
 - `public/` — Static assets (icons, manifest) copied directly to `dist/` during build.
